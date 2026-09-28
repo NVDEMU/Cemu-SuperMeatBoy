@@ -810,7 +810,7 @@ void MainWindow::TogglePadView()
 
 #if ( BOOST_OS_LINUX || BOOST_OS_BSD ) && HAS_WAYLAND
 		if (wxWlIsWaylandWindow(m_padView))
-			wxWlSetAppId(m_padView, "info.cemu.Cemu");
+			wxWlSetAppId(m_padView, "com.nvde.nvCEMU");
 #endif
 
 		m_padView->Initialize();
@@ -882,7 +882,7 @@ void MainWindow::OpenSettings()
 		SetMenuVisible(false);
 
 	if (language != config.language)
-		wxMessageBox(_("Cemu must be restarted to apply the selected UI language."), _("Information"), wxOK | wxCENTRE, this); // TODO: change language to newly selected one
+		wxMessageBox(_("nvCEMU must be restarted to apply the selected UI language."), _("Information"), wxOK | wxCENTRE, this); // TODO: change language to newly selected one
 }
 
 void MainWindow::OnOptionsInput(wxCommandEvent& event)
@@ -1895,7 +1895,7 @@ class CemuAboutDialog : public wxDialog
 {
 public:
 	CemuAboutDialog(wxWindow* parent = NULL)
-		: wxDialog(NULL, wxID_ANY, _("About Cemu"), wxDefaultPosition, wxSize(500, 700))
+		: wxDialog(NULL, wxID_ANY, _("About nvCEMU"), wxDefaultPosition, wxSize(500, 700))
 	{
 		Create(parent);
 	}
@@ -1927,7 +1927,7 @@ public:
 
 	void AddHeaderInfo(wxWindow* parent, wxSizer* sizer)
 	{
-		auto versionString = formatWxString(_("Cemu\nVersion {0}\nCompiled on {1}\nOriginal authors: {2}"), BUILD_VERSION_STRING, BUILD_DATE, "Exzap, Petergov");
+		auto versionString = formatWxString(_("nvCEMU\nVersion {0}\nCompiled on {1}\nOriginal Cemu authors: {2}"), BUILD_VERSION_STRING, BUILD_DATE, "Exzap, Petergov");
 
 		sizer->Add(new wxStaticText(parent, wxID_ANY, versionString), wxSizerFlags().Border(wxALL, 3).Border(wxTOP, 10));
 		sizer->Add(new wxHyperlinkCtrl(parent, wxID_ANY, "https://cemu.info", "https://cemu.info", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT)), wxSizerFlags().Expand().Border(wxTOP | wxBOTTOM, 3));
@@ -1936,7 +1936,7 @@ public:
 		sizer->Add(new wxStaticLine(parent), wxSizerFlags().Expand().Border(wxRIGHT, 4));
 		sizer->AddSpacer(5);
 
-		wxString extraInfo(_("Cemu is a Wii U emulator.\n\nWii and Wii U are trademarks of Nintendo.\nCemu is not affiliated with Nintendo."));
+		wxString extraInfo(_("nvCEMU is a Wii U emulator.\n\nWii and Wii U are trademarks of Nintendo.\nnvCEMU is not affiliated with Nintendo."));
 		sizer->Add(new wxStaticText(parent, wxID_ANY, extraInfo), wxSizerFlags());
 	}
 
@@ -2399,7 +2399,7 @@ void MainWindow::RecreateMenu()
 	m_check_update_menu->Enable(false);
 #endif
 	helpMenu->AppendSeparator();
-	helpMenu->Append(MAINFRAME_MENU_ID_HELP_ABOUT, _("&About Cemu"));
+	helpMenu->Append(MAINFRAME_MENU_ID_HELP_ABOUT, _("&About nvCEMU"));
 
 	m_menuBar->Append(helpMenu, _("&Help"));
 
