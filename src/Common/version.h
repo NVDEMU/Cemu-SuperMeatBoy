@@ -1,6 +1,6 @@
 #ifndef EMULATOR_NAME
 
-#define EMULATOR_NAME					"Cemu"
+#define EMULATOR_NAME					"nvCEMU"
 
 #define EMULATOR_VERSION_SUFFIX			""
 
