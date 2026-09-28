@@ -2,7 +2,7 @@
 Name=nvCEMU
 Type=Application
 Terminal=false
-Icon=info.nvde.nvCEMU
+Icon=info.cemu.Cemu
 Exec=nvCEMU
 GenericName=Wii U Emulator
 GenericName[fi]=Wii U -emulaattori
