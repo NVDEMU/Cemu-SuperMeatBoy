@@ -143,8 +143,8 @@ Section -Post
   WriteRegStr HKCU "Software\Classes\.wud" "" "$(^Name)"
   WriteRegStr HKCU "Software\Classes\.wux" "" "$(^Name)"
   WriteRegStr HKCU "Software\Classes\.wua" "" "$(^Name)"
-  WriteRegStr HKCU "Software\Classes\$(^Name)\DefaultIcon" "" "$INSTDIR\Cemu.exe,0"
-  WriteRegStr HKCU "Software\Classes\$(^Name)\Shell\open\command" "" '"$INSTDIR\Cemu.exe" %1'
+  WriteRegStr HKCU "Software\Classes\$(^Name)\DefaultIcon" "" "$INSTDIR\nvCEMU.exe,0"
+  WriteRegStr HKCU "Software\Classes\$(^Name)\Shell\open\command" "" '"$INSTDIR\nvCEMU.exe" %1'
 SectionEnd
 
 Section Uninstall
