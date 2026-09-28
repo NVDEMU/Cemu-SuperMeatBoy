@@ -1,0 +1,114 @@
+name: Publish nvCEMU Nightly
+
+on:
+  workflow_run:
+    workflows:
+      - Build Cemu
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: nvcemu-nightly-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v8
+        with:
+          name: nvcemu-bin-windows-x64
+          path: staging/windows
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download macOS Intel build
+        uses: actions/download-artifact@v8
+        with:
+          name: nvcemu-bin-macos-x86_64
+          path: staging/macos-x86_64
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download macOS Apple Silicon build
+        uses: actions/download-artifact@v8
+        with:
+          name: nvcemu-bin-macos-arm64
+          path: staging/macos-arm64
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download Linux x86_64 build
+        uses: actions/download-artifact@v8
+        with:
+          name: nvcemu-appimage-x64
+          path: staging/linux-x86_64
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download Linux ARM64 build
+        uses: actions/download-artifact@v8
+        with:
+          name: nvcemu-appimage-arm
+          path: staging/linux-arm64
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SHORT_SHA="$(git rev-parse --short=7 HEAD)"
+          mkdir -p release package/windows/nvCEMU_${SHORT_SHA}
+
+          cp staging/windows/nvCEMU.exe \
+            package/windows/nvCEMU_${SHORT_SHA}/nvCEMU.exe
+          (
+            cd package/windows
+            zip -r "../../release/nvCEMU-windows-x86_64-${SHORT_SHA}.zip" \
+              "nvCEMU_${SHORT_SHA}"
+          )
+
+          cp staging/macos-x86_64/nvCEMU.dmg \
+            "release/nvCEMU-macos-x86_64-${SHORT_SHA}.dmg"
+
+          cp staging/macos-arm64/nvCEMU.dmg \
+            "release/nvCEMU-macos-arm64-${SHORT_SHA}.dmg"
+
+          LINUX_X86="$(find staging/linux-x86_64 -type f -name '*.AppImage' -print -quit)"
+          LINUX_ARM="$(find staging/linux-arm64 -type f -name '*.AppImage' -print -quit)"
+
+          test -n "$LINUX_X86"
+          test -n "$LINUX_ARM"
+
+          cp "$LINUX_X86" "release/nvCEMU-linux-x86_64-${SHORT_SHA}.AppImage"
+          cp "$LINUX_ARM" "release/nvCEMU-linux-arm64-${SHORT_SHA}.AppImage"
+
+          ls -lh release
+
+      - name: Replace rolling nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release delete nightly --yes --cleanup-tag || true
+
+          SHORT_SHA="$(git rev-parse --short=7 HEAD)"
+
+          gh release create nightly release/* \
+            --target "${GITHUB_SHA}" \
+            --title "nvCEMU Nightly (${SHORT_SHA})" \
+            --notes "Automated nvCEMU build from main (${GITHUB_SHA}). This rolling release is used by the in-app update checker." \
+            --latest
