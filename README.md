@@ -24,7 +24,7 @@ nvCEMU is currently built for 64-bit Windows, Linux & macOS devices.
 
 ## Download
 
-You can download the latest nvCEMU releases for Windows, Linux and Mac from the [GitHub Releases](https://github.com/cemu-project/Cemu/releases/). For Linux you can also find Cemu on [Flathub](https://flathub.org/apps/info.cemu.Cemu).
+You can download the latest nvCEMU releases for Windows, Linux and Mac from the [GitHub Releases](https://github.com/NVDEMU/Cemu-SuperMeatBoy/releases/). nvCEMU builds are published from this fork's GitHub Actions pipeline.
 
 On Windows, Cemu is available both as an installer and in a portable format, where no installation is required besides extracting it in a safe place.
 
