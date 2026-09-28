@@ -264,7 +264,7 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, BUILD_VERSION_WITH_NAME_STRING);
 	struct curl_slist* headers = nullptr;
 	headers = curl_slist_append(headers, "Accept: application/vnd.github+json");
-	headers = curl_slist_append(headers, "X-GitHub-Api-Version: 2026-03-10");
+	headers = curl_slist_append(headers, "X-GitHub-Api-Version: 2022-11-28");
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteStringCallback);
@@ -300,10 +300,16 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 	if (releaseTag == document.MemberEnd() || !releaseTag->value.IsString())
 		return false;
 
-	auto releaseVersion = parseVersion(releaseTag->value.GetString());
-	const auto currentVersion = parseVersion(BUILD_VERSION_STRING);
-	if (!versionGreater(releaseVersion, currentVersion))
-		return false;
+	const std::string_view releaseTagName(releaseTag->value.GetString(), releaseTag->value.GetStringLength());
+	const bool isNightlyRelease = releaseTagName == "nightly";
+
+	if (!isNightlyRelease)
+	{
+		auto releaseVersion = parseVersion(releaseTagName);
+		const auto currentVersion = parseVersion(BUILD_VERSION_STRING);
+		if (!versionGreater(releaseVersion, currentVersion))
+			return false;
+	}
 
 	auto prerelease = document.FindMember("prerelease");
 	if (prerelease != document.MemberEnd() && prerelease->value.IsBool() && prerelease->value.GetBool())
@@ -334,6 +340,12 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 		const std::string_view assetName(name->value.GetString(), name->value.GetStringLength());
 		if (!assetMatchesPlatform(assetName))
 			continue;
+
+		// The rolling nightly release uses the current commit hash in every
+		// asset name. When the installed build already matches that hash,
+		// there is no update to download.
+		if (isNightlyRelease && assetName.find(BUILD_VERSION_STRING) != std::string_view::npos)
+			return false;
 
 		std::string digest;
 		auto digestValue = asset.FindMember("digest");
