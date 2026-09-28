@@ -12,7 +12,7 @@
   <summary xml:lang="pt_BR">Emulador Nintendo Wii U</summary>
   <summary xml:lang="it">Emulatore Nintendo Wii U</summary>
   <summary xml:lang="fi">Nintendo Wii U Emulaattori</summary>
-  <developer_name>nvCEMU Project</developer_name>
+  <developer_name>NVDEMU</developer_name>
   <launchable type="desktop-id">info.cemu.nvCEMU.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MPL-2.0</project_license>
