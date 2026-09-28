@@ -119,6 +119,11 @@ void MetalSynchronizedRingAllocator::CleanupBuffer(MTL::CommandBuffer* latestFin
 		{
 			itr.queue_syncPoints.pop();
 		}
+		// Command-buffer objects are released after completion and Metal may reuse
+		// the same address for a later command buffer. Clear the cached pointer so
+		// the new command buffer gets its own upload sync point.
+		if (itr.lastSyncpointCommandBuffer == latestFinishedCommandBuffer)
+			itr.lastSyncpointCommandBuffer = nullptr;
 		if (itr.queue_syncPoints.empty())
 			itr.cleanupCounter++;
 	}
