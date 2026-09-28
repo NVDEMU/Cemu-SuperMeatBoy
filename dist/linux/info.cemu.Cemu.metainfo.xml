@@ -56,9 +56,9 @@
       <url>https://github.com/cemu-project/nvCEMU/releases/tag/v2.0</url>
     </release>
   </releases>
-  <url type="homepage">https://cemu.info</url>
+  <url type="homepage">https://github.com/NVDEMU/Cemu-SuperMeatBoy</url>
   <url type="bugtracker">https://github.com/cemu-project/nvCEMU/issues</url>
-  <url type="faq">https://cemu.info/faq.html</url>
+  <url type="faq">https://github.com/NVDEMU/Cemu-SuperMeatBoy</url>
   <url type="help">https://wiki.cemu.info</url>
   <!-- <url type="vcs-browser">https://github.com/cemu-project/nvCEMU</url> -->
   <categories>
