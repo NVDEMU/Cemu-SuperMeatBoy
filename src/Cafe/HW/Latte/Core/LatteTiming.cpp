@@ -25,9 +25,23 @@ HRTick LatteTime_CalculateTimeBetweenVSync()
 	}
 	else
 	{
-		tick *= 1000ull;
-		tick /= 1002ull;
-		tick /= 60ull;
+		const uint64 titleId = CafeSystem::GetForegroundTitleId();
+		const bool isSuperMeatBoy =
+			titleId == 0x00050000101F3F00 || // USA
+			titleId == 0x00050000101F4000;  // Europe
+
+		if (isSuperMeatBoy)
+		{
+			// Super Meat Boy is a 60 Hz speedrunning target. Use an exact
+			// 60 Hz virtual cadence instead of the legacy 1002/1000 adjustment.
+			tick /= 60ull;
+		}
+		else
+		{
+			tick *= 1000ull;
+			tick /= 1002ull;
+			tick /= 60ull;
+		}
 	}
 	return tick;
 }
