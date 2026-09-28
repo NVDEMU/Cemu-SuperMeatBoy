@@ -32,7 +32,7 @@ wxDECLARE_EVENT(wxEVT_PROGRESS, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_PROGRESS, wxCommandEvent);
 
 CemuUpdateWindow::CemuUpdateWindow(wxWindow* parent)
-	: wxDialog(parent, wxID_ANY, _("Cemu update"), wxDefaultPosition, wxDefaultSize,
+	: wxDialog(parent, wxID_ANY, _("nvCEMU update"), wxDefaultPosition, wxDefaultSize,
 		wxCAPTION | wxMINIMIZE_BOX | wxSYSTEM_MENU | wxTAB_TRAVERSAL | wxCLOSE_BOX)
 {
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
@@ -195,7 +195,7 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 	if (rdString.empty())
 		return false;
 	std::string buffer;
-	std::string urlStr("https://cemu.info/api2/version.php?v=");
+	std::string urlStr("https://api.github.com/repos/NVDEMU/Cemu-SuperMeatBoy/releases/latest?version=");
 	auto* curl = curl_easy_init();
 	urlStr.append(CurlUrlEscape(curl, BUILD_VERSION_STRING));
 
@@ -320,7 +320,7 @@ bool CemuUpdateWindow::DownloadCemuUpdateFile(const std::string& url, const fs::
 	auto r = curl_easy_perform(curl);
 	if (r != CURLE_OK)
 	{
-		cemuLog_log(LogType::Force, "Cemu update download failed with error {}", r);
+		cemuLog_log(LogType::Force, "nvCEMU update download failed with error {}", r);
 		curl_easy_cleanup(curl);
 		return false;
 	}
@@ -328,7 +328,7 @@ bool CemuUpdateWindow::DownloadCemuUpdateFile(const std::string& url, const fs::
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 	if (http_code != 0 && http_code != 200)
 	{
-		cemuLog_log(LogType::Force, "Unable to download cemu update file from {} (http error: {})", url, http_code);
+		cemuLog_log(LogType::Force, "Unable to download nvCEMU update file from {} (http error: {})", url, http_code);
 		curl_easy_cleanup(curl);
 		return false;
 	}
@@ -426,11 +426,11 @@ bool CemuUpdateWindow::ExtractZipUpdate(const fs::path& zipname, const fs::path&
 		if (!archive.GetFileEntryByIndex(i, entry))
 			continue;
 		std::string_view firstDir = std::string_view(entry.fullPath).substr(0, entry.fullPath.find_first_of('/'));
-		if (!firstDir.empty() && firstDir.length() != entry.fullPath.length() && firstDir.starts_with("Cemu_"))
+		if (!firstDir.empty() && firstDir.length() != entry.fullPath.length() && firstDir.starts_with("nvCEMU_"))
 		{
 			if (!cemuPathPrefix.empty() && cemuPathPrefix != firstDir)
 			{
-				cemuLog_log(LogType::Force, "Cemu update zip contains multiple Cemu directories in root? Found {} and {}", firstDir, cemuPathPrefix);
+				cemuLog_log(LogType::Force, "nvCEMU update zip contains multiple nvCEMU directories in root? Found {} and {}", firstDir, cemuPathPrefix);
 				return false;
 			}
 			cemuPathPrefix = firstDir;
@@ -438,7 +438,7 @@ bool CemuUpdateWindow::ExtractZipUpdate(const fs::path& zipname, const fs::path&
 	}
 	if (cemuPathPrefix.empty())
 	{
-		cemuLog_log(LogType::Force, "Cemu update zip does not match expected structure");
+		cemuLog_log(LogType::Force, "nvCEMU update zip does not match expected structure");
 		return false;
 	}
 	if (m_order == WorkerOrder::Exit)
@@ -523,7 +523,7 @@ bool CemuUpdateWindow::ExtractZipUpdate(const fs::path& zipname, const fs::path&
 #if BOOST_OS_WINDOWS
 bool CemuUpdateWindow::WorkerThread_Windows()
 {
-	const auto tmppath = fs::temp_directory_path() / L"cemu_update";
+	const auto tmppath = fs::temp_directory_path() / L"nvcemu_update";
 	std::error_code ec;
 	if (exists(tmppath))
 		remove_all(tmppath, ec);
@@ -541,7 +541,7 @@ bool CemuUpdateWindow::WorkerThread_Windows()
 	SubmitWorkerResult(Result::ExtractSuccess);
 	// set relaunch path
 	fs::path newExePath = ActiveSettings::GetExecutablePath();
-	newExePath = newExePath.parent_path().append("Cemu.exe");
+	newExePath = newExePath.parent_path().append("nvCEMU.exe");
 	m_restartFile = newExePath;
 	return true;
 }
@@ -550,11 +550,11 @@ bool CemuUpdateWindow::WorkerThread_Windows()
 #if BOOST_OS_LINUX
 bool CemuUpdateWindow::WorkerThread_AppImage()
 {
-	const auto tmppath = fs::temp_directory_path() / L"cemu_update";
+	const auto tmppath = fs::temp_directory_path() / L"nvcemu_update";
 	std::error_code ec;
 	if (exists(tmppath, ec))
 		remove_all(tmppath, ec);
-	const auto updateSrcFile = tmppath / L"Cemu.AppImage";
+	const auto updateSrcFile = tmppath / L"nvCEMU.AppImage";
 	if (!DownloadCemuUpdateFile(m_downloadUrl, updateSrcFile))
 		return false;
 	if (m_order == WorkerOrder::Exit)
@@ -581,7 +581,7 @@ bool CemuUpdateWindow::WorkerThread_AppImage()
 #if BOOST_OS_MACOS
 bool CemuUpdateWindow::WorkerThread_MacBundle()
 {
-	const fs::path tempPath = fs::temp_directory_path() / "cemu_update";
+	const fs::path tempPath = fs::temp_directory_path() / "nvcemu_update";
 
     std::error_code ec;
     fs::remove_all(tempPath, ec);
@@ -589,7 +589,7 @@ bool CemuUpdateWindow::WorkerThread_MacBundle()
     if (ec)
         return false;
 
-    const fs::path dmgPath = tempPath / "cemu.dmg";
+    const fs::path dmgPath = tempPath / "nvCEMU.dmg";
     if (!DownloadCemuUpdateFile(m_downloadUrl, dmgPath))
         return false;
 
@@ -601,7 +601,7 @@ bool CemuUpdateWindow::WorkerThread_MacBundle()
     const fs::path appBundle = executable.parent_path().parent_path().parent_path();
     if (appBundle.extension() != ".app")
     {
-        cemuLog_log(LogType::Force, "Cemu is not running from a macOS app bundle");
+        cemuLog_log(LogType::Force, "nvCEMU is not running from a macOS app bundle");
         return false;
     }
 
@@ -651,8 +651,8 @@ finish()
 
     if [ -d "$APP_BUNDLE" ]; then
         /usr/bin/open -n "$APP_BUNDLE" || true
-    elif [ -x "$BACKUP_BUNDLE/Contents/MacOS/Cemu" ]; then
-        "$BACKUP_BUNDLE/Contents/MacOS/Cemu" &
+    elif [ -x "$BACKUP_BUNDLE/Contents/MacOS/nvCEMU" ]; then
+        "$BACKUP_BUNDLE/Contents/MacOS/nvCEMU" &
     fi
 
     exit "$STATUS"
@@ -672,13 +672,13 @@ trap finish EXIT HUP INT TERM
 MOUNTED=1
 
 /usr/bin/ditto \
-    "$MOUNT_PATH/Cemu.app" \
+    "$MOUNT_PATH/nvCEMU.app" \
     "$STAGED_BUNDLE"
 
 /usr/bin/codesign \
     --verify \
     --strict \
-    "$STAGED_BUNDLE/Contents/MacOS/Cemu"
+    "$STAGED_BUNDLE/Contents/MacOS/nvCEMU"
 
 /usr/bin/hdiutil detach "$MOUNT_PATH"
 MOUNTED=0
