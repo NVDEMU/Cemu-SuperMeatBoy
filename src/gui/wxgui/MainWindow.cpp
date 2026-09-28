@@ -1930,7 +1930,7 @@ public:
 		auto versionString = formatWxString(_("nvCEMU\nVersion {0}\nCompiled on {1}\nOriginal Cemu authors: {2}"), BUILD_VERSION_STRING, BUILD_DATE, "Exzap, Petergov");
 
 		sizer->Add(new wxStaticText(parent, wxID_ANY, versionString), wxSizerFlags().Border(wxALL, 3).Border(wxTOP, 10));
-		sizer->Add(new wxHyperlinkCtrl(parent, wxID_ANY, "https://cemu.info", "https://cemu.info", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT)), wxSizerFlags().Expand().Border(wxTOP | wxBOTTOM, 3));
+		sizer->Add(new wxHyperlinkCtrl(parent, wxID_ANY, "https://github.com/NVDEMU/Cemu-SuperMeatBoy", "https://github.com/NVDEMU/Cemu-SuperMeatBoy", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT)), wxSizerFlags().Expand().Border(wxTOP | wxBOTTOM, 3));
 
 		sizer->AddSpacer(3);
 		sizer->Add(new wxStaticLine(parent), wxSizerFlags().Expand().Border(wxRIGHT, 4));
@@ -2046,7 +2046,7 @@ public:
 		{
 			wxSizer* lineSizer = new wxBoxSizer(wxHORIZONTAL);
 			lineSizer->Add(new wxStaticText(parent, wxID_ANY, "Modified ih264 from Android project ("));
-			lineSizer->Add(new wxHyperlinkCtrl(parent, wxID_ANY, "Source", "https://cemu.info/oss/ih264d.zip", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT)));
+			lineSizer->Add(new wxHyperlinkCtrl(parent, wxID_ANY, "Source", "https://github.com/NVDEMU/Cemu-SuperMeatBoy", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT)));
 			lineSizer->Add(new wxStaticText(parent, wxID_ANY, " "));
 			wxHyperlinkCtrl* noticeLink = new wxHyperlinkCtrl(parent, wxID_ANY, "NOTICE", "", wxDefaultPosition, wxDefaultSize, (wxHL_CONTEXTMENU|wxNO_BORDER|wxHL_ALIGN_LEFT));
 			noticeLink->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent& event)
