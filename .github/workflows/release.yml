@@ -6,7 +6,6 @@ on:
       - Build Cemu
     types:
       - completed
-  workflow_dispatch:
 
 concurrency:
   group: nvcemu-nightly-release
@@ -25,7 +24,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 1
 
       - name: Download Windows build
@@ -33,6 +32,7 @@ jobs:
         with:
           name: nvcemu-bin-windows-x64
           path: staging/windows
+          github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
 
       - name: Download macOS Intel build
@@ -99,6 +99,7 @@ jobs:
       - name: Replace rolling nightly release
         env:
           GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -108,7 +109,7 @@ jobs:
           SHORT_SHA="$(git rev-parse --short=7 HEAD)"
 
           gh release create nightly release/* \
-            --target "${GITHUB_SHA}" \
+            --target "${TARGET_SHA}" \
             --title "nvCEMU Nightly (${SHORT_SHA})" \
-            --notes "Automated nvCEMU build from main (${GITHUB_SHA}). This rolling release is used by the in-app update checker." \
+            --notes "Automated nvCEMU build from main (${TARGET_SHA}). This rolling release is used by the in-app update checker." \
             --latest
