@@ -190,6 +190,7 @@ jobs:
       run: Rename-Item bin/nvCEMU_release.exe nvCEMU.exe
 
     - name: Build NSIS Installer
+      if: ${{ inputs.next_version_major != '' && inputs.next_version_minor != '' }}
       shell: cmd
       run: |
         cd src\resource
@@ -202,6 +203,7 @@ jobs:
         path: ./bin/nvCEMU.exe
 
     - name: Upload NSIS Installer
+      if: ${{ inputs.next_version_major != '' && inputs.next_version_minor != '' }}
       uses: actions/upload-artifact@v6
       with:
         name: nvcemu-installer-windows-x64
