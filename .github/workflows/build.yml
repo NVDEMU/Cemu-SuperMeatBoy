@@ -80,13 +80,13 @@ jobs:
         cmake --build build
 
     - name: Prepare artifact
-      run: mv bin/Cemu_release bin/Cemu
+      run: mv bin/nvCEMU_release bin/nvCEMU
 
     - name: Upload artifact
       uses: actions/upload-artifact@v6
       with:
-        name: cemu-bin-linux-${{ matrix.arch }}
-        path: ./bin/Cemu
+        name: nvcemu-bin-linux-${{ matrix.arch }}
+        path: ./bin/nvCEMU
 
   build-appimage:
     strategy:
@@ -124,7 +124,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v6
       with:
-        name: cemu-appimage-${{ matrix.arch }}
+        name: nvcemu-appimage-${{ matrix.arch }}
         path: artifacts
 
   build-windows:
@@ -184,7 +184,7 @@ jobs:
         cmake --build . --config ${{ env.BUILD_MODE }}
 
     - name: Prepare artifact
-      run: Rename-Item bin/Cemu_release.exe Cemu.exe
+      run: Rename-Item bin/nvCEMU_release.exe nvCEMU.exe
 
     - name: Build NSIS Installer
       shell: cmd
@@ -195,8 +195,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v6
       with:
-        name: cemu-bin-windows-x64
-        path: ./bin/Cemu.exe
+        name: nvcemu-bin-windows-x64
+        path: ./bin/nvCEMU.exe
 
     - name: Upload NSIS Installer
       uses: actions/upload-artifact@v6
@@ -282,18 +282,18 @@ jobs:
 
     - name: Prepare artifact
       run: |
-        mkdir bin/Cemu_app
-        mv bin/Cemu_release.app bin/Cemu_app/Cemu.app
-        mv bin/Cemu_app/Cemu.app/Contents/MacOS/Cemu_release bin/Cemu_app/Cemu.app/Contents/MacOS/Cemu
-        sed -i '' 's/Cemu_release/Cemu/g' bin/Cemu_app/Cemu.app/Contents/Info.plist
-        codesign --entitlements ${{github.workspace}}/src/resource/cemu.macos.entitlements --force --deep --preserve-metadata=entitlements,requirements,flags,runtime --sign - --timestamp --options runtime bin/Cemu_app/Cemu.app/Contents/MacOS/Cemu
-        ln -s /Applications bin/Cemu_app/Applications
-        hdiutil create ./bin/tmp.dmg -ov -volname "Cemu" -fs HFS+ -srcfolder "./bin/Cemu_app"
-        hdiutil convert ./bin/tmp.dmg -format UDZO -o bin/Cemu.dmg
+        mkdir bin/nvCEMU_app
+        mv bin/nvCEMU_release.app bin/nvCEMU_app/nvCEMU.app
+        mv bin/nvCEMU_app/nvCEMU.app/Contents/MacOS/nvCEMU_release bin/nvCEMU_app/nvCEMU.app/Contents/MacOS/nvCEMU
+        sed -i '' 's/nvCEMU_release/nvCEMU/g' bin/nvCEMU_app/nvCEMU.app/Contents/Info.plist
+        codesign --entitlements ${{github.workspace}}/src/resource/cemu.macos.entitlements --force --deep --preserve-metadata=entitlements,requirements,flags,runtime --sign - --timestamp --options runtime bin/nvCEMU_app/nvCEMU.app/Contents/MacOS/nvCEMU
+        ln -s /Applications bin/nvCEMU_app/Applications
+        hdiutil create ./bin/tmp.dmg -ov -volname "nvCEMU" -fs HFS+ -srcfolder "./bin/nvCEMU_app"
+        hdiutil convert ./bin/tmp.dmg -format UDZO -o bin/nvCEMU.dmg
         rm bin/tmp.dmg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v6
       with:
-        name: cemu-bin-macos-${{ matrix.arch }}
-        path: ./bin/Cemu.dmg
+        name: nvcemu-bin-macos-${{ matrix.arch }}
+        path: ./bin/nvCEMU.dmg
