@@ -382,7 +382,7 @@ bool CemuApp::OnInit()
 
 #if ( BOOST_OS_LINUX || BOOST_OS_BSD ) && HAS_WAYLAND
 	if (wxWlIsWaylandWindow(m_mainFrame))
-		wxWlSetAppId(m_mainFrame, "info.cemu.Cemu");
+		wxWlSetAppId(m_mainFrame, "com.nvde.nvCEMU");
 #endif
 
 	return true;
