@@ -22,6 +22,7 @@
 
 #include <curl/curl.h>
 #include <boost/tokenizer.hpp>
+#include <rapidjson/document.h>
 #include <openssl/rand.h>
 
 
@@ -191,88 +192,169 @@ static std::string GetPlatformUpdateIdentifier()
 // returns true if update is available and sets output parameters
 bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string& changelogUrlOut, std::array<uint8, 32>& fileSha256Out)
 {
-	std::string rdString = GenerateSecureRandomString();
-	if (rdString.empty())
-		return false;
-	std::string buffer;
-	std::string urlStr("https://api.github.com/repos/NVDEMU/Cemu-SuperMeatBoy/releases/latest?version=");
-	auto* curl = curl_easy_init();
-	urlStr.append(CurlUrlEscape(curl, BUILD_VERSION_STRING));
-
-	std::string platformIdentifier = GetPlatformUpdateIdentifier();
+	const std::string platformIdentifier = GetPlatformUpdateIdentifier();
 	if (platformIdentifier.empty())
 		return false;
 
-	urlStr.append("&platform=");
-	urlStr.append(platformIdentifier);
+	auto parseVersion = [](std::string_view version)
+	{
+		std::array<uint64_t, 4> values{};
+		size_t valueIndex = 0;
+		size_t i = 0;
+		while (i < version.size() && valueIndex < values.size())
+		{
+			while (i < version.size() && !std::isdigit(static_cast<unsigned char>(version[i])))
+				++i;
+			if (i >= version.size())
+				break;
 
-	const auto& config = GetWxGUIConfig();
-	urlStr.append("&s=");
-	urlStr.append(rdString);
-	if(config.receive_untested_updates)
-		urlStr.append("&allowNewUpdates=1");
+			uint64_t value = 0;
+			while (i < version.size() && std::isdigit(static_cast<unsigned char>(version[i])))
+			{
+				value = value * 10 + static_cast<uint64_t>(version[i] - '0');
+				++i;
+			}
+			values[valueIndex++] = value;
+		}
+		return values;
+	};
 
-	curl_easy_setopt(curl, CURLOPT_URL, urlStr.c_str());
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	auto versionGreater = [](const std::array<uint64_t, 4>& lhs, const std::array<uint64_t, 4>& rhs)
+	{
+		for (size_t i = 0; i < lhs.size(); ++i)
+		{
+			if (lhs[i] != rhs[i])
+				return lhs[i] > rhs[i];
+		}
+		return false;
+	};
+
+	auto assetMatchesPlatform = [&platformIdentifier](std::string_view name)
+	{
+		auto contains = [&name](std::string_view value)
+		{
+			return name.find(value) != std::string_view::npos;
+		};
+
+		if (contains("nvCEMU") == false)
+			return false;
+
+		if (platformIdentifier == "windows_x86_64")
+			return contains("windows") && (contains("x86_64") || contains("x64")) && name.ends_with(".zip");
+		if (platformIdentifier == "macos_bundle_x86_64")
+			return contains("macos") && (contains("x86_64") || contains("x64")) && name.ends_with(".dmg");
+		if (platformIdentifier == "macos_bundle_aarch64")
+			return contains("macos") && (contains("aarch64") || contains("arm64")) && name.ends_with(".dmg");
+		if (platformIdentifier == "linux_appimage_x86_64")
+			return contains("linux") && (contains("x86_64") || contains("x64")) && name.ends_with(".AppImage");
+		if (platformIdentifier == "linux_appimage_aarch64")
+			return contains("linux") && (contains("aarch64") || contains("arm64")) && name.ends_with(".AppImage");
+		return false;
+	};
+
+	CURL* curl = curl_easy_init();
+	if (!curl)
+		return false;
+
+	const std::string url = "https://api.github.com/repos/NVDEMU/Cemu-SuperMeatBoy/releases/latest";
+	std::string buffer;
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, BUILD_VERSION_WITH_NAME_STRING);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, nullptr);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteStringCallback);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 	curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 
-	bool result = false;
-	CURLcode cr = curl_easy_perform(curl);
-	if (cr == CURLE_OK)
+	const CURLcode result = curl_easy_perform(curl);
+	if (result != CURLE_OK)
 	{
-		long http_code = 0;
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-		if (http_code != 0 && http_code != 200)
-		{
-			cemuLog_log(LogType::Force, "Update check failed (http code: {})", http_code);
-			cemu_assert_debug(false);
-			return false;
-		}
-
-		std::vector<std::string> tokens;
-		const boost::char_separator<char> sep{ "|" };
-		for (const auto& token : boost::tokenizer(buffer, sep))
-			tokens.emplace_back(token);
-
-		if (tokens.size() >= 5 && tokens[0] == "UPDATE")
-		{
-			// first token: "UPDATE"
-			// second token: Download URL
-			// third token: Changelog URL
-			// fourth token: SHA256
-			// fifth token: Signature
-			// we allow more tokens in case we ever want to add extra information for future releases
-			downloadUrlOut = CurlUrlUnescape(curl, tokens[1]);
-			changelogUrlOut = CurlUrlUnescape(curl, tokens[2]);
-			if (!downloadUrlOut.empty() && !changelogUrlOut.empty())
-				result = true;
-			// check signature
-			std::string signedMessage = platformIdentifier.append("|").append(tokens[0]).append("|").append(tokens[1]).append("|").append(tokens[2]).append("|").append(tokens[3]).append("|").append(rdString);
-			bool isValidSignature = VerifyUpdateResponseSignature(signedMessage, tokens[4]);
-			if (!isValidSignature)
-			{
-				cemuLog_log(LogType::Force, "Failed server signature check");
-				return false;
-			}
-			std::vector<uint8> fileShaVec;
-			if (!HexToBytes(tokens[3], fileShaVec))
-				return false;
-			if (fileShaVec.size() != 32)
-				return false;
-			std::memcpy(fileSha256Out.data(), fileShaVec.data(), 32);
-		}
+		cemuLog_log(LogType::Force, "nvCEMU update check failed with CURL error {}", static_cast<int>(result));
+		curl_easy_cleanup(curl);
+		return false;
 	}
-	else
-	{
-		cemuLog_log(LogType::Force, "Update check failed with CURL error {}", (int)cr);
-		cemu_assert_debug(false);
-	}
+
+	long httpCode = 0;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
 	curl_easy_cleanup(curl);
-	return result;
+
+	if (httpCode != 200)
+	{
+		cemuLog_log(LogType::Force, "nvCEMU update check failed (http code: {})", httpCode);
+		return false;
+	}
+
+	rapidjson::Document document;
+	document.Parse(buffer.c_str());
+	if (document.HasParseError() || !document.IsObject())
+		return false;
+
+	auto releaseTag = document.FindMember("tag_name");
+	if (releaseTag == document.MemberEnd() || !releaseTag->value.IsString())
+		return false;
+
+	auto releaseVersion = parseVersion(releaseTag->value.GetString());
+	const auto currentVersion = parseVersion(BUILD_VERSION_STRING);
+	if (!versionGreater(releaseVersion, currentVersion))
+		return false;
+
+	auto prerelease = document.FindMember("prerelease");
+	if (prerelease != document.MemberEnd() && prerelease->value.IsBool() && prerelease->value.GetBool())
+	{
+		if (!GetWxGUIConfig().receive_untested_updates)
+			return false;
+	}
+
+	auto draft = document.FindMember("draft");
+	if (draft != document.MemberEnd() && draft->value.IsBool() && draft->value.GetBool())
+		return false;
+
+	auto assets = document.FindMember("assets");
+	if (assets == document.MemberEnd() || !assets->value.IsArray())
+		return false;
+
+	for (const auto& asset : assets->value.GetArray())
+	{
+		if (!asset.IsObject())
+			continue;
+
+		auto name = asset.FindMember("name");
+		auto downloadUrl = asset.FindMember("browser_download_url");
+		if (name == asset.MemberEnd() || downloadUrl == asset.MemberEnd() ||
+			!name->value.IsString() || !downloadUrl->value.IsString())
+			continue;
+
+		const std::string_view assetName(name->value.GetString(), name->value.GetStringLength());
+		if (!assetMatchesPlatform(assetName))
+			continue;
+
+		std::string digest;
+		auto digestValue = asset.FindMember("digest");
+		if (digestValue != asset.MemberEnd() && digestValue->value.IsString())
+			digest = digestValue->value.GetString();
+
+		if (digest.starts_with("sha256:"))
+			digest.erase(0, std::string("sha256:").size());
+		if (digest.size() != 64)
+			continue;
+
+		std::vector<uint8> fileShaVec;
+		if (!HexToBytes(digest, fileShaVec) || fileShaVec.size() != fileSha256Out.size())
+			continue;
+
+		std::memcpy(fileSha256Out.data(), fileShaVec.data(), fileSha256Out.size());
+		downloadUrlOut = downloadUrl->value.GetString();
+
+		auto changelog = document.FindMember("html_url");
+		if (changelog != document.MemberEnd() && changelog->value.IsString())
+			changelogUrlOut = changelog->value.GetString();
+
+		return true;
+	}
+
+	return false;
 }
 
 std::future<bool> CemuUpdateWindow::IsUpdateAvailableAsync()
