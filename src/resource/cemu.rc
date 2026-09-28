@@ -90,11 +90,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Cemu Wii U emulator"
-            VALUE "InternalName", "Cemu"
-            VALUE "LegalCopyright", "Team Cemu"
+            VALUE "FileDescription", "nvCEMU Wii U emulator"
+            VALUE "InternalName", "nvCEMU"
+            VALUE "LegalCopyright", "NVDEMU"
             VALUE "OriginalFilename", "Cemu.exe"
-            VALUE "ProductName", "Cemu"
+            VALUE "ProductName", "nvCEMU"
         	VALUE "ProductVersion", xstr(EMULATOR_VERSION_MAJOR) "." xstr(EMULATOR_VERSION_MINOR) "." xstr(EMULATOR_VERSION_PATCH) EMULATOR_VERSION_SUFFIX "\0"
         END
     END
