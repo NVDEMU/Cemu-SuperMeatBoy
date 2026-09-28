@@ -1,13 +1,13 @@
-# **Cemu - Wii U emulator**
+# **nvCEMU - Wii U emulator**
 
 [![Build Process](https://github.com/cemu-project/Cemu/actions/workflows/build.yml/badge.svg)](https://github.com/cemu-project/Cemu/actions/workflows/build.yml)
 [![Discord](https://img.shields.io/discord/286429969104764928?label=Cemu&logo=discord&logoColor=FFFFFF)](https://discord.gg/5psYsup)
 [![Matrix Server](https://img.shields.io/matrix/cemu:cemu.info?server_fqdn=matrix.cemu.info&label=cemu:cemu.info&logo=matrix&logoColor=FFFFFF)](https://matrix.to/#/#cemu:cemu.info)
 
-This is the code repository of Cemu, a Wii U emulator that is able to run most Wii U games and homebrew in a playable state.
+This is the code repository of nvCEMU, a Wii U emulator that is able to run most Wii U games and homebrew in a playable state.
 It's written in C/C++ and is being actively developed with new features and fixes.
 
-Cemu is currently only available for 64-bit Windows, Linux & macOS devices.
+nvCEMU is currently built for 64-bit Windows, Linux & macOS devices.
 
 ### Links:
  - [Open Source Announcement](https://www.reddit.com/r/cemu/comments/wwa22c/cemu_20_announcement_linux_builds_opensource_and/)
@@ -24,7 +24,7 @@ Cemu is currently only available for 64-bit Windows, Linux & macOS devices.
 
 ## Download
 
-You can download the latest Cemu releases for Windows, Linux and Mac from the [GitHub Releases](https://github.com/cemu-project/Cemu/releases/). For Linux you can also find Cemu on [Flathub](https://flathub.org/apps/info.cemu.Cemu).
+You can download the latest nvCEMU releases for Windows, Linux and Mac from the [GitHub Releases](https://github.com/cemu-project/Cemu/releases/). For Linux you can also find Cemu on [Flathub](https://flathub.org/apps/info.cemu.Cemu).
 
 On Windows, Cemu is available both as an installer and in a portable format, where no installation is required besides extracting it in a safe place.
 
@@ -34,11 +34,11 @@ Pre-2.0 releases can be found on Cemu's [changelog page](https://cemu.info/chang
 
 ## Build Instructions
 
-To compile Cemu yourself on Windows, Linux or macOS, view [BUILD.md](/BUILD.md).
+To compile nvCEMU yourself on Windows, Linux or macOS, view [BUILD.md](/BUILD.md).
 
 ## Issues
 
-Issues with the emulator should be filed using [GitHub Issues](https://github.com/cemu-project/Cemu/issues).  
+Issues with nvCEMU should be filed using [GitHub Issues](https://github.com/cemu-project/Cemu/issues).  
 The old bug tracker can be found at [bugs.cemu.info](https://bugs.cemu.info) and still contains relevant issues and feature suggestions.
 
 ## Contributing
@@ -46,4 +46,4 @@ The old bug tracker can be found at [bugs.cemu.info](https://bugs.cemu.info) and
 If you want to contribute you can take a look at our [contribution guidelines](/CONTRIBUTING.md).
 
 ## License
-Cemu is licensed under [Mozilla Public License 2.0](/LICENSE.txt). Exempt from this are all files in the dependencies directory for which the licenses of the original code apply as well as some individual files in the src folder, as specified in those file headers respectively.
+nvCEMU is licensed under [Mozilla Public License 2.0](/LICENSE.txt). Exempt from this are all files in the dependencies directory for which the licenses of the original code apply as well as some individual files in the src folder, as specified in those file headers respectively.
