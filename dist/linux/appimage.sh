@@ -36,7 +36,7 @@ chmod +x AppDir/usr/bin/nvCEMU
 
 cp /usr/lib/"${CPU_ARCH}"-linux-gnu/{libsepol.so.1,libffi.so.7,libpcre.so.3,libGLU.so.1,libthai.so.0} AppDir/usr/lib
 
-export UPD_INFO="gh-releases-zsync|NVDEMU|Cemu-SuperMeatBoy|nightly|nvCEMU.AppImage.zsync"
+export UPD_INFO="gh-releases-zsync|NVDEMU|Cemu-SuperMeatBoy|ci|nvCEMU.AppImage.zsync"
 export NO_STRIP=1
 ./linuxdeploy-"${CPU_ARCH}".AppImage --appimage-extract-and-run \
   --appdir="${GITHUB_WORKSPACE}"/AppDir/ \
