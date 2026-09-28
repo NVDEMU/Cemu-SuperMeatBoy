@@ -24,6 +24,7 @@
 #include <boost/tokenizer.hpp>
 #include <rapidjson/document.h>
 #include <openssl/rand.h>
+#include <cctype>
 
 
 wxDECLARE_EVENT(wxEVT_RESULT, wxCommandEvent);
@@ -261,7 +262,10 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, BUILD_VERSION_WITH_NAME_STRING);
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, nullptr);
+	struct curl_slist* headers = nullptr;
+	headers = curl_slist_append(headers, "Accept: application/vnd.github+json");
+	headers = curl_slist_append(headers, "X-GitHub-Api-Version: 2026-03-10");
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteStringCallback);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -278,6 +282,7 @@ bool CemuUpdateWindow::QueryUpdateInfo(std::string& downloadUrlOut, std::string&
 
 	long httpCode = 0;
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+	curl_slist_free_all(headers);
 	curl_easy_cleanup(curl);
 
 	if (httpCode != 200)
