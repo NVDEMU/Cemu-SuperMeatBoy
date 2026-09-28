@@ -150,7 +150,7 @@ void CemuApp::DeterminePaths(std::set<fs::path>& failedWriteAccess) // for Linux
 	else
 #endif
 	{
-		SetAppName("Cemu");
+		SetAppName("nvCEMU");
 		wxString appName = GetAppName();
 		standardPaths.SetFileLayout(wxStandardPaths::FileLayout::FileLayout_XDG);
 		auto getEnvDir = [&](const wxString& varName, const wxString& defaultValue)
@@ -192,7 +192,7 @@ void CemuApp::DeterminePaths(std::set<fs::path>& failedWriteAccess) // for MacOS
 	else
 #endif
 	{
-		SetAppName("Cemu");
+		SetAppName("nvCEMU");
 		wxString appName = GetAppName();
 		user_data_path = config_path = standardPaths.GetUserDataDir().ToStdString();
 		data_path = standardPaths.GetDataDir().ToStdString();
@@ -213,10 +213,10 @@ void CemuApp::InitializeNewMLCOrFail(fs::path mlc)
 	if(ActiveSettings::IsCommandLineMlcPath() || ActiveSettings::IsCustomMlcPath())
 	{
 		// tell user that the custom path is not writable
-		wxMessageBox(formatWxString(_("Cemu failed to write to the custom mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
+		wxMessageBox(formatWxString(_("nvCEMU failed to write to the custom mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		exit(0);
 	}
-	wxMessageBox(formatWxString(_("Cemu failed to write to the mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
+	wxMessageBox(formatWxString(_("nvCEMU failed to write to the mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 	exit(0);
 }
 
@@ -231,11 +231,11 @@ void CemuApp::InitializeExistingMLCOrFail(fs::path mlc)
 		// if it's a command line path then just quit. Otherwise ask if user wants to reset the path
 		if(ActiveSettings::IsCommandLineMlcPath())
 		{
-			wxMessageBox(formatWxString(_("Cemu failed to write to the custom mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
+			wxMessageBox(formatWxString(_("nvCEMU failed to write to the custom mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 			exit(0);
 		}
 		// ask user if they want to reset the path
-		const wxString message = formatWxString(_("Cemu failed to write to the custom mlc directory.\n\nThe path is:\n{}\n\nCemu cannot start without a valid mlc path. Do you want to reset the path? You can later change it again in the General Settings."),
+		const wxString message = formatWxString(_("nvCEMU failed to write to the custom mlc directory.\n\nThe path is:\n{}\n\nCemu cannot start without a valid mlc path. Do you want to reset the path? You can later change it again in the General Settings."),
 												_pathToUtf8(mlc));
 		wxMessageDialog dialog(nullptr, message, _("Error"), wxCENTRE | wxYES_NO | wxICON_WARNING);
 		dialog.SetYesNoLabels(_("Reset path"), _("Exit"));
@@ -251,7 +251,7 @@ void CemuApp::InitializeExistingMLCOrFail(fs::path mlc)
 	else
 	{
 		// default path is not writeable. Just let the user know and quit. Unsure if it would be a good idea to ask the user to choose an alternative path instead
-		wxMessageBox(formatWxString(_("Cemu failed to write to the default mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
+		wxMessageBox(formatWxString(_("nvCEMU failed to write to the default mlc directory.\nThe path is:\n{}"), wxHelper::FromPath(mlc)), _("Error"), wxOK | wxCENTRE | wxICON_ERROR);
 		exit(0);
 	}
 }
